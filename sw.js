@@ -1,5 +1,5 @@
 /* Momiji service worker. Bump VERSION on deploy to drop the app-shell caches. */
-const VERSION = 'v2';
+const VERSION = 'v3';
 const STATIC = `momiji-static-${VERSION}`;
 const PAGES = `momiji-pages-${VERSION}`;
 // TTS clips are content-addressed (text/voice/rate/pitch in the URL), so they survive version bumps.
