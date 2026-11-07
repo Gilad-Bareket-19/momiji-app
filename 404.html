@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Momiji — Learn Japanese</title>
+  <script>
+    // GitHub Pages 404 SPA fallback
+    var path = window.location.pathname;
+    var hash = window.location.hash || '';
+    var base = '/momiji-app/';
+    if (path.indexOf(base) === 0) {
+      var sub = path.slice(base.length);
+      if (sub && sub !== 'index.html' && sub !== '404.html') {
+        hash = '#/' + sub.replace(/^\/+/, '');
+      }
+    }
+    window.location.replace(base + hash);
+  </script>
+  <meta http-equiv="refresh" content="0; url=/momiji-app/">
+</head>
+<body style="font-family: system-ui, sans-serif; text-align: center; padding: 48px 20px;">
+  <h2>Loading Momiji Japanese...</h2>
+  <p><a href="/momiji-app/">Click here to enter</a></p>
+</body>
+</html>

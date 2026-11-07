@@ -1,12 +1,14 @@
 /* Momiji service worker. Bump VERSION on deploy to drop the app-shell caches. */
-const VERSION = 'v3';
+const VERSION = 'v4';
 const STATIC = `momiji-static-${VERSION}`;
 const PAGES = `momiji-pages-${VERSION}`;
 // TTS clips are content-addressed (text/voice/rate/pitch in the URL), so they survive version bumps.
 const AUDIO = 'momiji-audio';
 const AUDIO_MAX = 3000;
 const NAV_TIMEOUT = 4000;
-const CACHE_FIRST = /^\/(assets|content|icons|kanjivg)\//;
+const CACHE_FIRST = /(assets|content|icons|kanjivg)\//;
+
+const getScope = () => self.registration?.scope || self.location.origin + '/';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -38,18 +40,20 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(navigate(event));
   } else if (CACHE_FIRST.test(url.pathname)) {
     // /content/*.json is not content-hashed: serve from cache, refresh in the background
-    event.respondWith(cacheFirst(event, url.pathname.startsWith('/content/')));
+    event.respondWith(cacheFirst(event, url.pathname.includes('/content/')));
   }
 });
 
 async function precache() {
+  const scope = getScope();
   try {
-    const res = await fetch(new Request('/', { cache: 'reload' }));
-    if (res.ok && !res.redirected) await (await caches.open(PAGES)).put('/', res);
+    const res = await fetch(new Request(scope, { cache: 'reload' }));
+    if (res.ok && !res.redirected) await (await caches.open(PAGES)).put(scope, res);
   } catch {
     /* offline during install: the shell is cached on the next navigation */
   }
-  await (await caches.open(STATIC)).add('/icons/icon.svg').catch(() => undefined);
+  const iconUrl = new URL('icons/icon.svg', scope).href;
+  await (await caches.open(STATIC)).add(iconUrl).catch(() => undefined);
 }
 
 const cacheable = (res) => res.ok && res.status === 200 && res.type === 'basic' && !res.redirected;
@@ -75,13 +79,14 @@ async function cacheFirst(event, revalidate) {
 
 /** Network-first for page loads; falls back to the cached app shell when offline or slow. */
 function navigate(event) {
+  const scope = getScope();
   const network = fetch(event.request);
   event.waitUntil(
     network
       .then((res) => {
         if (!cacheable(res) || !(res.headers.get('content-type') || '').includes('text/html')) return;
         const copy = res.clone();
-        return caches.open(PAGES).then((cache) => cache.put('/', copy));
+        return caches.open(PAGES).then((cache) => cache.put(scope, copy));
       })
       .catch(() => undefined),
   );
@@ -92,7 +97,7 @@ function navigate(event) {
     } catch {
       /* offline */
     }
-    const cached = await caches.match('/', { cacheName: PAGES });
+    const cached = (await caches.match(scope, { cacheName: PAGES })) || (await caches.match('/', { cacheName: PAGES }));
     if (cached) return cached;
     return network.catch(offlinePage);
   })();
