@@ -6,6 +6,7 @@
   <script>
     // GitHub Pages 404 SPA fallback
     var path = window.location.pathname;
+    var search = window.location.search || '';
     var hash = window.location.hash || '';
     var base = '/momiji-app/';
     if (path.indexOf(base) === 0) {
@@ -14,7 +15,7 @@
         hash = '#/' + sub.replace(/^\/+/, '');
       }
     }
-    window.location.replace(base + hash);
+    window.location.replace(base + search + hash);
   </script>
   <meta http-equiv="refresh" content="0; url=/momiji-app/">
 </head>

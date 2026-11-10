@@ -1,5 +1,5 @@
 /* Momiji service worker. Bump VERSION on deploy to drop the app-shell caches. */
-const VERSION = 'v4';
+const VERSION = 'v5';
 const STATIC = `momiji-static-${VERSION}`;
 const PAGES = `momiji-pages-${VERSION}`;
 // TTS clips are content-addressed (text/voice/rate/pitch in the URL), so they survive version bumps.
@@ -32,7 +32,7 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
-  if (url.pathname === '/api/tts') {
+  if (url.pathname.endsWith('/api/tts')) {
     event.respondWith(ttsClip(event, url));
   } else if (url.pathname.startsWith('/api/')) {
     // /api/ai*, /api/progress, /api/nlp*, /api/health …: always live, never cached
